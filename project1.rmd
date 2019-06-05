@@ -1,0 +1,133 @@
+---
+title: "Course Project 1"
+---
+
+### Introduction
+
+It is now possible to collect a large amount of data about personal movement using activity
+ monitoring devices such as a Fitbit, Nike Fuelband, or Jawbone Up. These type of devices
+ are part of the ¡°quantified self¡± movement ¨C a group of enthusiasts who take 
+measurements about themselves regularly to improve their health, to find patterns in their
+ behavior, or because they are tech geeks. But these data remain under-utilized both
+ because the raw data are hard to obtain and there is a lack of statistical methods and 
+software for processing and interpreting the data.
+
+This assignment makes use of data from a personal activity monitoring device. This device
+ collects data at 5 minute intervals through out the day. The data consists of two months of
+ data from an anonymous individual collected during the months of October and November,
+ 2012 and include the number of steps taken in 5 minute intervals each day.
+
+#### *The variables included in this dataset are:*
+
+* **steps:** Number of steps taking in a 5-minute interval (missing values are NA)
+
+* **date:**  The date on which the measurement was taken in YYYY-MM-DD format
+
+* **interval:** Identifier for the 5-minute interval in which measurement was taken
+
+*The dataset is stored in a comma-separated-value (CSV) file and there are a total of 
+17,568 observations in this dataset.*
+
+### **Commit**
+
+##### 1. Code for reading in the dataset 
+
+```{r, echo=TRUE}
+df = read.csv('D:\\OneDrive - zju.edu.cn\\Coursera\\R-5\\repdata_data_activity\\activity.csv')
+head(df)
+```
+
+##### 2. Histogram of the total number of steps taken each day
+
+```{r, echo=TRUE, fig.width=8, fig.height=6}
+sum_df = tapply(df[, 'steps'], df[, 'date'], sum)
+hist(
+     sum_df,
+     main = paste("Histogram of ", 'sum step every day'),
+     xlab = 'sum step'
+     )
+```
+
+##### 3. Mean and median number of steps taken each day
+
+* number of steps taken each day
+
+    *beacause of there are too many words to print, so I choose some to print*
+
+```{r, echo=TRUE}
+mean_df = tapply(df[, 'steps'], df[, 'date'], mean)
+mean_eachday = mean(mean_df)
+median_eachday = median(mean_df)
+mean_df[1]
+mean_df[2]
+mean_df[3]
+mean_df[4]
+mean_df[5]
+```
+
+so the mean  of the total number of steps taken per day is `r mean_eachday`, 
+the meadian of the total number of steps taken per day is `r median_eachday`.
+
+
+
+
+##### 4. Time series plot of the average number of steps taken
+
+```{r, echo=TRUE}
+plot(
+     df$interval, df$steps,
+     type = 'l'
+     )
+```
+
+##### 5. The 5-minute interval that, on average, contains the maximum number of steps
+
+```{r, echo=TRUE}
+df_s = subset(df, steps == max(df$steps, na.rm = TRUE))
+inter = df_s$interval
+```
+
+the `r inter` interval that, on average, contains the `r  max(df$steps, na.rm = TRUE)` number of steps
+
+##### 6. Code to describe and show a strategy for imputing missing data
+```{r, echo=TRUE}
+library(mice)
+imp = mice(df)
+fit = with(imp, lm(steps ~ date, data = df))
+pooled = pool(fit)
+result = complete(pooled)
+df = as.data.frame(result)
+head(df)
+```
+I use the library `mice` to imput the data. I suppose that there is 
+a liner relation ship between steps and date
+
+##### 7.Histogram of the total number of steps taken each day after missing values are imputed
+
+```{r, echo=TRUE}
+sum_df = tapply(df[, 'steps'], df[, 'date'], sum)
+hist(
+     sum_df,
+     main = paste("Histogram of ", 'sum step every day after imputting'),
+     xlab = 'sum step after imputting'
+     )
+```
+
+##### 8. Panel plot comparing the average number of steps taken per 5-minute interval across weekdays and weekends
+
+```{r, echo=TRUE}
+library(lubridate)
+df_weekend = subset(df, wday(as.Date(df$date, '%Y - %m - %d')) >= 6)
+sum_df_weekend = tapply(df_weekend[, 'steps'], df_weekend[, 'date'], sum)
+df_weekdays = subset(df, wday(as.Date(df$date, '%Y - %m - %d')) < 6)
+sum_df_weekdays = tapply(df_weekdays[, 'steps'], df_weekdays[, 'date'], sum)
+```
+
+I sperate the dateset by weekdays
+
+The result of the t-test 
+```{r, echo=TRUE}
+t.test(sum_df_weekend, sum_df_weekdays)
+```
+we can find that the steps in weekends  *significantly* greater
+than steps in weekdays
