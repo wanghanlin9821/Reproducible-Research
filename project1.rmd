@@ -95,7 +95,7 @@ library(mice)
 imp = mice(df)
 fit = with(imp, lm(steps ~ date, data = df))
 pooled = pool(fit)
-result = complete(pooled)
+result = complete(imp)
 df = as.data.frame(result)
 head(df)
 ```
@@ -125,9 +125,36 @@ sum_df_weekdays = tapply(df_weekdays[, 'steps'], df_weekdays[, 'date'], sum)
 
 I sperate the dateset by weekdays
 
+**weekdays**
+```{r, echo=TRUE}
+head(df_weekdays)
+```
+
+**weekends**
+```{r, echo=TRUE}
+head(df_weekend)
+```
+
 The result of the t-test 
 ```{r, echo=TRUE}
 t.test(sum_df_weekend, sum_df_weekdays)
 ```
 we can find that the steps in weekends  *significantly* greater
 than steps in weekdays
+**weekdays plot**
+```{r, echo=TRUE}
+plot(
+     df_weekdays$date,
+     df_weekdays$steps,
+     type = 'l'
+     )
+```
+
+**weekends plot**
+```{r, echo=TRUE}
+plot(
+     df_weekend$date,
+     df_weekend$steps,
+     type = 'l'
+     )
+```
